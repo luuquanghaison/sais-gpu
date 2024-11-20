@@ -8,6 +8,7 @@ function run_bench_mcmc(; seed, model_type, elt_type, max_chain_exponent = 10)
                 N=Int[], 
                 time=Float64[], 
                 model = String[],
+                type = Symbol[],
                 backend=Symbol[],
                 elt_type = String[],
                 )
@@ -28,6 +29,7 @@ function run_bench_mcmc(; seed, model_type, elt_type, max_chain_exponent = 10)
                 N, 
                 time = m.full_timing.time,
                 model = string(model_type),
+                type = Symbol("None"),
                 backend = backend_label(backend),
                 elt_type = string(elt_type)
             ))

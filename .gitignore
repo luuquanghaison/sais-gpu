@@ -4,3 +4,4 @@ nextflow/work/*
 LocalPreferences.toml
 Manifest.toml
 .vscode/
+.depot/
