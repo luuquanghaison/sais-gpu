@@ -1,5 +1,7 @@
 include("ais.jl")
-using CairoMakie
+#using CairoMakie
+using PairPlots
+using StatPlots
 
 plot_barrier(ais) =
     lines(0.01..1, x -> ais.barriers.localbarrier(x))

@@ -2,3 +2,5 @@ nextflow/.nextflow.log*
 nextflow/.nextflow/*
 nextflow/work/*
 LocalPreferences.toml
+Manifest.toml
+.vscode/

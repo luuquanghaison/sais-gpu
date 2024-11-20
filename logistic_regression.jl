@@ -75,7 +75,7 @@ function update!(lr, state::AbstractVector{E}, entry::Int, new_value) where {E}
     # prior update
     old_sqs = state[n + p + 1] 
     new_sqs = old_sqs - old_value^2 + new_value^2 
-    log_prior = -new_sqs/E(2)
+    log_prior = -new_sqs/E(200)
     state[n + p + 1] = new_sqs
     state[n + p + 2] = log_prior
     
