@@ -2,6 +2,6 @@ nextflow/.nextflow.log*
 nextflow/.nextflow/*
 nextflow/work/*
 LocalPreferences.toml
-Manifest.toml
+nextflow/julia_env/Manifest.toml
 .vscode/
 .depot/

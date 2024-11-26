@@ -1,57 +1,66 @@
-include { crossProduct; collectCSVs; deliverables; setupPigeons; } from './utils.nf'
+include { crossProduct; collectCSVs; deliverables; } from './utils.nf'
+include { instantiate; precompile_gpu; } from "./nf-nest/pkg_gpu.nf"
+include { activate; } from "./nf-nest/pkg.nf"
 
 params.dryRun = false
-def julia_depot_dir = file("/scratch/st-alexbou-1/lqhson/sais-gpu/.depot")
-// def julia_env_dir = file("..")
-// def julia_depot_dir = file(".depot")
-def toml_files = file("../*.toml")
+def julia_env = file('julia_env')
+def data_dir = file('../data')
 
-def experiment_jl = "utils.jl,toy_unid.jl,simple_mixture.jl,SplitRandom.jl,report.jl,sais.jl,zja.jl,mh.jl,bench_variance_utils.jl,ais.jl,Particles.jl,kernels.jl,barriers.jl,bench_gpu_mcmc.jl,parallel_mcmc.jl".split(",").collect{file("../" + it)}
-def plot_jl = "utils.jl,toy_unid.jl,simple_mixture.jl,SplitRandom.jl,report.jl,bench_variance_plot.jl,sais.jl,zja.jl,mh.jl,bench_variance_utils.jl,ais.jl,Particles.jl,kernels.jl,barriers.jl,parallel_mcmc.jl".split(",").collect{file("../" + it)}
+def experiment_jl = "utils.jl,toy_unid.jl,simple_mixture.jl,SplitRandom.jl,report.jl,sais.jl,zja.jl,mh.jl,bench_variance_utils.jl,ais.jl,Particles.jl,kernels.jl,barriers.jl,bench_gpu_mcmc.jl,parallel_mcmc.jl,logistic_regression.jl,logistic_regression_data.jl,bench_gpu_particles.jl".split(",").collect{file("../" + it)}
+def plot_jl = "utils.jl,toy_unid.jl,simple_mixture.jl,SplitRandom.jl,report.jl,bench_speedup_plot.jl,sais.jl,zja.jl,mh.jl,bench_variance_utils.jl,ais.jl,Particles.jl,kernels.jl,barriers.jl,parallel_mcmc.jl".split(",").collect{file("../" + it)}
 
 def deliv = deliverables(workflow)
 
+// def variables = [
+//     job_seed: (1..10),
+//     job_model: ["LogisticRegression"],
+//     job_elt_type: ["Float64", "Float32"],
+// ]
 def variables = [
     job_seed: (1..10),
-    job_model: ["LogisticRegression"],
+    job_model: ["Unid", "SimpleMixture"],
+    job_scheme_types: ["SAIS", "ZJA"],
     job_elt_type: ["Float64", "Float32"],
 ]
 
 workflow  {
+    compiled_env = instantiate(julia_env) | precompile_gpu
     args = crossProduct(variables, params.dryRun)
-    // julia_env = setupPigeons(julia_depot_dir, julia_env_dir)
-    results = run_experiment(julia_depot_dir, toml_files, experiment_jl, args, params.dryRun) | collectCSVs    
-    plot(julia_depot_dir, toml_files, plot_jl, results)
+    results = run_experiment(compiled_env, data_dir, experiment_jl, args, params.dryRun) | collectCSVs
+    plot(julia_env, plot_jl, results)
 }
 
 process run_experiment {
-    debug false
+    debug true
+    label 'gpu'
     time 400.min
     memory = 16.GB
     errorStrategy 'ignore'
-    scratch true 
-    clusterOptions '--nodes 1', '--account st-alexbou-1-gpu', '--gpus 1'
+    //clusterOptions '--nodes 1', '--account st-alexbou-1-gpu', '--gpus 1'
     input:
-        env JULIA_DEPOT_PATH
-        // path julia_env
-        path toml_files
+        path julia_env
+        path data_dir
         path jl_files
         val arg
         val dryRun
     output:
         tuple val(arg), path('csvs')
     """
-    #!/usr/bin/env -S julia
+    ${activate(julia_env)}
 
-    include(joinpath("/scratch/st-alexbou-1/lqhson/sais-gpu", "bench_gpu_mcmc.jl"))
+    n_rounds = ${arg.job_model == "Unid" ? 7 : 5} 
 
-    result = run_bench_mcmc(; 
-        seed = ${arg.job_seed}, 
-        model_type = ${arg.job_model}, 
-        elt_type = ${arg.job_elt_type})
+    include(pwd() * "/bench_gpu_particles.jl")
+    result = run_bench(; 
+                n_rounds, 
+                seed = ${arg.job_seed},
+                model_type = ${arg.job_model},
+                scheme_type = ${arg.job_scheme_types},
+                elt_type = ${arg.job_elt_type},
+            )
     
     mkdir("csvs")
-    CSV.write("csvs/bench_mcmc_speedup.csv", result; quotestrings = true)
+    CSV.write("csvs/bench_speedup.csv", result; quotestrings = true)
     """
 }
 
@@ -60,9 +69,8 @@ process plot {
     time 5.min
     memory = 16.GB
     input:
-        env JULIA_DEPOT_PATH
-        // path julia_env
-        path toml_files
+        path julia_env
+        // path toml_files
         path jl_files
         path aggregated 
     output:
@@ -70,9 +78,9 @@ process plot {
     publishDir { deliverables(workflow) }, mode: 'copy', overwrite: true
     
     """ 
-    #!/usr/bin/env -S julia --project=@.
+    ${activate(julia_env)}
 
-    include(joinpath("/scratch/st-alexbou-1/lqhson/sais-gpu", "bench_speedup_plot.jl"))
+    include(pwd() * "/bench_speedup_plot.jl")
     result = DataFrame(CSV.File("aggregated/bench_mcmc_speedup.csv"))
 
     fg = create_speedup_fig(result)

@@ -3,7 +3,7 @@ include("bench_variance_utils.jl")
 using StatsPlots
 using AlgebraOfGraphics
 
-function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type, max_particle_exponent = 21)
+function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type, max_particle_exponent = 11)
     result = DataFrame(
                 N=Int[], 
                 time=Float64[], 
