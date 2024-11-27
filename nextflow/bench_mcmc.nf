@@ -11,23 +11,23 @@ def plot_jl = "utils.jl,toy_unid.jl,simple_mixture.jl,SplitRandom.jl,report.jl,b
 
 def deliv = deliverables(workflow)
 
-// def variables = [
-//     job_seed: (1..10),
-//     job_model: ["LogisticRegression"],
-//     job_elt_type: ["Float64", "Float32"],
-// ]
 def variables = [
     job_seed: (1..10),
-    job_model: ["Unid", "SimpleMixture"],
-    job_scheme_types: ["SAIS", "ZJA"],
+    job_model: ["LogisticRegression"],
     job_elt_type: ["Float64", "Float32"],
 ]
+// def variables = [
+//     job_seed: (1..10),
+//     job_model: ["Unid", "SimpleMixture"],
+//     job_scheme_types: ["SAIS", "ZJA"],
+//     job_elt_type: ["Float64", "Float32"],
+// ]
 
 workflow  {
     compiled_env = instantiate(julia_env) | precompile_gpu
     args = crossProduct(variables, params.dryRun)
     results = run_experiment(compiled_env, data_dir, experiment_jl, args, params.dryRun) | collectCSVs
-    plot(julia_env, plot_jl, results)
+    //plot(julia_env, plot_jl, results)
 }
 
 process run_experiment {
@@ -48,14 +48,12 @@ process run_experiment {
     """
     ${activate(julia_env)}
 
-    n_rounds = ${arg.job_model == "Unid" ? 7 : 5} 
-
-    include(pwd() * "/bench_gpu_particles.jl")
-    result = run_bench(; 
-                n_rounds, 
+    include(pwd() * "/bench_gpu_mcmc.jl")
+    result = run_bench_mcmc(; 
+                init_len = 1000, 
                 seed = ${arg.job_seed},
                 model_type = ${arg.job_model},
-                scheme_type = ${arg.job_scheme_types},
+                scheme_type = MCMC,
                 elt_type = ${arg.job_elt_type},
             )
     

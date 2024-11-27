@@ -27,16 +27,13 @@ flowchart TB
     v5["data_dir"]
     v6["jl_files"]
     v7["dryRun"]
-    v12["julia_env"]
-    v13["jl_files"]
     end
     v2([instantiate_process])
     v3([precompile_gpu])
     v8([run_experiment])
     v11([collectCSVsProcess])
-    v14([plot])
     subgraph " "
-    v15[" "]
+    v12["aggregated"]
     end
     v9(( ))
     v0 --> v2
@@ -49,10 +46,7 @@ flowchart TB
     v7 --> v8
     v8 --> v9
     v9 --> v11
-    v11 --> v14
-    v12 --> v14
-    v13 --> v14
-    v14 --> v15
+    v11 --> v12
 
 </pre>
 <script type="module">

@@ -63,7 +63,7 @@ function gpu_available()
     end
 end
 
-backends() = gpu_available() ? [CPU(), CUDABackend()] : [CPU()]
+backends() = gpu_available() ? [CUDABackend()] : [CPU()]
 
 backend_label(::CPU) = :CPU 
 backend_label(_)     = :GPU
@@ -84,13 +84,13 @@ function nested_Rhat(particles)
     superchains = reshape(particles, (M, K))
     Bhat_nu = var(vec(mean(superchains,dims=1)))
     Btilde_nu = vec(var(superchains,dims=1))
-    Wtilde_nu = fill(0,K)
-    What_nu = mean(Btilde_nu .+ Wtilde_nu)
+    #Wtilde_nu = fill(0,K)
+    What_nu = mean(Btilde_nu) #.+ Wtilde_nu)
     return sqrt(1+Bhat_nu/What_nu)
 end
 
 # nested R hat threshold based on ESS and number of chains
 function nRhat_from_ESS(ess_val,N) 
     M, K = superchain_split(N)
-    return sqrt(1+1/M+1/(ess_val))
+    return sqrt(1+1/M+3/(ess_val))
 end

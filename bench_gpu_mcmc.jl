@@ -33,14 +33,16 @@ function run_bench_mcmc(; init_len, seed, model_type, scheme_type, elt_type,
             @show N
             s = scheme(scheme_type, len, 1.0)
             a = ais(target, s; seed, N, backend, elt_type, show_report = false)
-            while (maximum(nested_Rhat.(eachrow(a.particles.states))) > nRhat_from_ESS(ESS_thres,N)) & (len < 100000)
-                @show maximum(nested_Rhat.(eachrow(a.particles.states)))
+            while (CUDA.@allowscalar maximum(nested_Rhat.(eachrow(a.particles.states))) > nRhat_from_ESS(ESS_thres,N)) & (len < 100000)
+                @show (CUDA.@allowscalar maximum(nested_Rhat.(eachrow(a.particles.states))))
                 @show nRhat_from_ESS(ESS_thres,N)
                 len *= 2
                 @show len
                 s = scheme(scheme_type, len, 1.0)
                 a = ais(target, s; seed, N, backend, elt_type, show_report = false)
             end
+            @show (CUDA.@allowscalar maximum(nested_Rhat.(eachrow(a.particles.states))))
+            @show nRhat_from_ESS(ESS_thres,N)
             ess_vec = 
             push!(result, (; 
                 N, 
@@ -50,10 +52,10 @@ function run_bench_mcmc(; init_len, seed, model_type, scheme_type, elt_type,
                 backend = backend_label(backend),
                 elt_type = string(elt_type),
                 chain_length = len,
-                max_Rhat = maximum(nested_Rhat.(eachrow(a.particles.states))),
-                med_Rhat = median(nested_Rhat.(eachrow(a.particles.states))),
-                max_Rhat2 = maximum(nested_Rhat.(eachrow(a.particles.states .^ 2))),
-                med_Rhat2 = median(nested_Rhat.(eachrow(a.particles.states .^ 2)))
+                max_Rhat = (CUDA.@allowscalar maximum(nested_Rhat.(eachrow(a.particles.states)))),
+                med_Rhat = (CUDA.@allowscalar median(nested_Rhat.(eachrow(a.particles.states)))),
+                max_Rhat2 = (CUDA.@allowscalar maximum(nested_Rhat.(eachrow(a.particles.states .^ 2)))),
+                med_Rhat2 = (CUDA.@allowscalar median(nested_Rhat.(eachrow(a.particles.states .^ 2))))
             ))
         end
     end
