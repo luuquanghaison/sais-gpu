@@ -1,41 +1,4 @@
 ################################################################################
-# Parallel MCMC kernels
-################################################################################
-
-# L = chain length
-# D = dim 
-# N = num chains
-
-@kernel function init_(
-    rngs, @Const(problem_obj), 
-    chains       # L x D x N
-    )
-    n = @index(Global)  # ∈ 1 .. N 
-    rng = rngs[n]
-    state = @view chains[1, :, n]
-    iid_sample!(rng, problem_obj, state)
-end
-
-@kernel function sample_(
-    rngs, @Const(problem_obj), @Const(explorer), 
-    chains,         # L x D x N
-    buffers,        # _ x N
-    L
-    )
-
-    n = @index(Global)  # ∈ 1 .. N 
-    rng = rngs[n]
-    for l in 2:L
-        chains[l, :, n] .= chains[l-1, :, n]
-        state = @view chains[l, :, n]
-        buffer = @view buffers[:, n]
-        explore!(rng, explorer, problem_obj, state, buffer, 1.0)
-    end    
-end
-
-
-
-################################################################################
 # AIS kernels
 ################################################################################
 

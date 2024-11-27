@@ -1,6 +1,6 @@
 include("bench_variance_utils.jl")
-#using CairoMakie
-using StatsPlots
+using CairoMakie
+#using StatsPlots
 using AlgebraOfGraphics
 
 function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type, max_particle_exponent = 11)

@@ -1,4 +1,5 @@
 using KernelAbstractions
+using MCMCChains
 
 """
 Normalize a vector of non-negative weights stored in 
@@ -66,3 +67,30 @@ backends() = gpu_available() ? [CPU(), CUDABackend()] : [CPU()]
 
 backend_label(::CPU) = :CPU 
 backend_label(_)     = :GPU
+
+
+# superchain split function
+function superchain_split(N) 
+    @assert isinteger(log2(N)) # expect N = 2^i
+    M = 2^(ceil(Int,log2(N)/2)) # set number of chains M per superchain close to √N
+    K = Int(N/M) # number of superchains
+    return M, K
+end
+
+# nested R hat
+function nested_Rhat(particles)
+    N = length(particles)
+    M, K = superchain_split(N)
+    superchains = reshape(particles, (M, K))
+    Bhat_nu = var(vec(mean(superchains,dims=1)))
+    Btilde_nu = vec(var(superchains,dims=1))
+    Wtilde_nu = fill(0,K)
+    What_nu = mean(Btilde_nu .+ Wtilde_nu)
+    return sqrt(1+Bhat_nu/What_nu)
+end
+
+# nested R hat threshold based on ESS and number of chains
+function nRhat_from_ESS(ess_val,N) 
+    M, K = superchain_split(N)
+    return sqrt(1+1/M+1/(ess_val))
+end

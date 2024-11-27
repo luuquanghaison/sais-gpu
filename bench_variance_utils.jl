@@ -1,5 +1,6 @@
 include("sais.jl")
 include("zja.jl")
+include("parallel_mcmc.jl")
 include("simple_mixture.jl")
 include("logistic_regression.jl")
 include("toy_unid.jl")
@@ -30,3 +31,4 @@ approx_gcb(::LogisticRegression) = 9.9
 scheme(::Type{SAIS}, n_rounds, Λ) = SAIS(n_rounds)
 scheme(::Type{FixedSchedule}, n_rounds, Λ) = FixedSchedule(2^(n_rounds-1)) 
 scheme(::Type{ZJA}, n_rounds, Λ) = ZJA((Λ / 2^(n_rounds-1))^2)
+scheme(::Type{MCMC}, len, Λ) = MCMC(len) # specify chain length instead of n_rounds
