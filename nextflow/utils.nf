@@ -62,5 +62,5 @@ process collectCSVsProcess {
     """
 }
 
-def deliverables(workflow) { 'deliverables/' + workflow.scriptName.replace('.nf','') + "_" + workflow.start }
+def deliverables(workflow) { 'deliverables/' + workflow.scriptName.replace('.nf','')}// + "_" + workflow.start }
 

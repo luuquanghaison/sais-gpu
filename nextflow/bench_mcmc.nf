@@ -13,8 +13,10 @@ def deliv = deliverables(workflow)
 
 def variables = [
     job_seed: (1..10),
+    n_rounds: (5..10),
     job_model: ["LogisticRegression"],
-    job_elt_type: ["Float64", "Float32"],
+    job_scheme_types: ["SAIS"],
+    job_elt_type: ["Float64"],
 ]
 // def variables = [
 //     job_seed: (1..10),
@@ -48,12 +50,13 @@ process run_experiment {
     """
     ${activate(julia_env)}
 
-    include(pwd() * "/bench_gpu_mcmc.jl")
-    result = run_bench_mcmc(; 
-                init_len = 1000, 
+    n_rounds = ${arg.n_rounds}
+    include(pwd() * "/bench_gpu_particles.jl")
+    result = run_bench(; 
+                n_rounds, 
                 seed = ${arg.job_seed},
                 model_type = ${arg.job_model},
-                scheme_type = MCMC,
+                scheme_type = ${arg.job_scheme_types},
                 elt_type = ${arg.job_elt_type},
             )
     

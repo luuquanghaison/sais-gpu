@@ -3,14 +3,15 @@ using CairoMakie
 #using StatsPlots
 using AlgebraOfGraphics
 
-function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type, max_particle_exponent = 11)
+function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type, max_particle_exponent = 20)
     result = DataFrame(
-                N=Int[], 
-                time=Float64[], 
+                N = Int[], 
+                time = Float64[], 
                 model = String[],
                 type = Symbol[],
-                backend=Symbol[],
+                backend = Symbol[],
                 elt_type = String[],
+                ESS = Float64[]
                 )
 
     for backend in backends()
@@ -33,7 +34,8 @@ function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type, max_part
                 model = string(model_type),
                 type = Symbol(scheme_type),
                 backend = backend_label(backend),
-                elt_type = string(elt_type)
+                elt_type = string(elt_type),
+                ESS = ess(a.particles)
             ))
         end
     end
