@@ -11,7 +11,8 @@ function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type, max_part
                 type = Symbol[],
                 backend = Symbol[],
                 elt_type = String[],
-                ESS = Float64[]
+                ESS = Float64[],
+                median_MC_err = Float64[]
                 )
 
     for backend in backends()
@@ -35,7 +36,8 @@ function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type, max_part
                 type = Symbol(scheme_type),
                 backend = backend_label(backend),
                 elt_type = string(elt_type),
-                ESS = ess(a.particles)
+                ESS = ess(a.particles),
+                median_MC_err = med_mc_err(target,a.particles)
             ))
         end
     end

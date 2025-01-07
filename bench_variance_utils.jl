@@ -32,3 +32,11 @@ scheme(::Type{SAIS}, n_rounds, Λ) = SAIS(n_rounds)
 scheme(::Type{FixedSchedule}, n_rounds, Λ) = FixedSchedule(2^(n_rounds-1)) 
 scheme(::Type{ZJA}, n_rounds, Λ) = ZJA((Λ / 2^(n_rounds-1))^2)
 scheme(::Type{MCMC}, len, Λ) = MCMC(len) # specify chain length instead of n_rounds
+
+function med_mc_err(lr::LogisticRegression, p::Particles) # return log2 of median Monte Carlo error
+    d = lr.p
+    N = length(p.probabilities)
+    first_moment = vec(sum(p.states[1:d,:],weights(p.probabilities),2))
+    second_moment = vec(sum(p.states[1:d,:] .^ 2,weights(p.probabilities .^ 2),2))
+    return log2(median(second_moment-first_moment))-2*log2(N)
+end
