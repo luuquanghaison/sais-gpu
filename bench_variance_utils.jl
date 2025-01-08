@@ -38,5 +38,5 @@ function med_mc_err(lr::LogisticRegression, p::Particles) # return log2 of media
     N = length(p.probabilities)
     first_moment = vec(sum(p.states[1:d,:],weights(p.probabilities),2))
     second_moment = vec(sum(p.states[1:d,:] .^ 2,weights(p.probabilities .^ 2),2))
-    return log2(median(second_moment-first_moment))-2*log2(N)
+    return log2(median(second_moment - first_moment .^ 2 ./ N))
 end

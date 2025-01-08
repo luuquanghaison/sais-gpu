@@ -45,13 +45,6 @@ pairplot(filtered_samples)
 
 ###############################################################
 target = build_target(CPU(), LogisticRegression)
-y_vec = [1, 1, 1, 0, 1, 1, 1, 1, 0, 0]
-x_mat = [1.0 -0.22431898850947196; 1.0 1.7394207065134153; 
-        1.0 1.7007639471686942; 1.0 -0.831201924337179; 
-        1.0 -0.39854651439527594; 1.0 -0.03729529996432233; 
-        1.0 0.40501534544028; 1.0 -0.7439535958170874; 
-        1.0 -0.5159742079044226; 1.0 -1.0939094681946309]
-target = LogisticRegression(10,2,x_mat,y_vec)
 model_approx_gcb = approx_gcb(target)
 s = scheme(SAIS, 6, model_approx_gcb)
 a = ais(target, s; seed=1, N=2^10, backend=CPU(), elt_type=Float64, show_report = false)
