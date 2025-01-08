@@ -36,7 +36,13 @@ scheme(::Type{MCMC}, len, Λ) = MCMC(len) # specify chain length instead of n_ro
 function med_mc_err(lr::LogisticRegression, p::Particles) # return log2 of median Monte Carlo error
     d = lr.p
     N = length(p.probabilities)
-    first_moment = vec(sum(p.states[1:d,:],weights(p.probabilities),2))
-    second_moment = vec(sum(p.states[1:d,:] .^ 2,weights(p.probabilities .^ 2),2))
-    return log2(median(second_moment - first_moment .^ 2 ./ N))
+    err = Float64[]
+    for i in 1:d
+        weighted_vals = p.states[i,:] .* p.probabilities
+        first_moment = sum(weighted_vals)^2/N
+        second_moment = sum(x -> x^2, weighted_vals)
+        push!(err, second_moment-first_moment)
+    end
+
+    return log2(median(err))
 end

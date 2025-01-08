@@ -36,7 +36,7 @@ process run_experiment {
     debug true
     label 'gpu'
     time 400.min
-    memory = 16.GB
+    memory = 30.GB
     errorStrategy 'ignore'
     //clusterOptions '--nodes 1', '--account st-alexbou-1-gpu', '--gpus 1'
     input:
