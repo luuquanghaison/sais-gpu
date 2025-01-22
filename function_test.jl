@@ -72,7 +72,7 @@ df = res_CGGibbs
 n_rounds = 9
 df = df[(df.n_rounds .== n_rounds),:]
 
-StatsPlots.boxplot(log2.(df.N), log2.(df.ESS ./ df.time), title = "n_rounds = $n_rounds")
+StatsPlots.boxplot(log2.(df.N), log2.(df.ESS ./ df.time), title = "chain length = $(2^n_rounds)", label = "parallel CGGibbs")
 StatsPlots.xlabel!("log₂(particles)")
 StatsPlots.ylabel!("log₂(ESS/s)")
-StatsPlots.hline!
+StatsPlots.scatter!([log2(5.3154), log2(21.7346)], [-13.0265, -15.0327], label = "CGGibbs")

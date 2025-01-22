@@ -13,17 +13,11 @@ def deliv = deliverables(workflow)
 
 def variables = [
     job_seed: (1..10),
-    n_rounds: (5..10),
+    n_rounds: (5..15),
     job_model: ["LogisticRegression"],
-    job_scheme_types: ["SAIS"],
+    job_scheme_types: ["MCMC"],
     job_elt_type: ["Float64"],
 ]
-// def variables = [
-//     job_seed: (1..10),
-//     job_model: ["Unid", "SimpleMixture"],
-//     job_scheme_types: ["SAIS", "ZJA"],
-//     job_elt_type: ["Float64", "Float32"],
-// ]
 
 workflow  {
     compiled_env = instantiate(julia_env) | precompile_gpu
@@ -61,7 +55,7 @@ process run_experiment {
             )
     
     mkdir("csvs")
-    CSV.write("csvs/bench_speedup.csv", result; quotestrings = true)
+    CSV.write("csvs/bench_mcmc.csv", result; quotestrings = true)
     """
 }
 
